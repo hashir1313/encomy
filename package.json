@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "node server.js",
-    "start": "node server.js",
+    "start": "npx prisma db push && node server.js",
     "db:push": "npx prisma@5.17.0 db push",
     "postinstall": "npx prisma@5.17.0 generate"
   },
