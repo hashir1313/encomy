@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encomy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f0e8;
+      --text: #1a1a1a;
+      --gold: #d4a017;
+      --gold-light: #fef7e0;
+      --blue: #4a90d9;
+      --blue-light: #e8f2fc;
+      --danger: #d94a4a;
+      --danger-light: #fce8e8;
+      --white: #ffffff;
+      --border: #e0d8cc;
+      --shadow: rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .nav-inner {
+      display: flex;
+      gap: 0;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .nav-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 1rem 0.5rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .nav-btn:hover { color: var(--text); }
+    .nav-btn.active { color: var(--text); border-bottom-color: var(--gold); }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem 1rem;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* COIN ICON */
+    .coin-icon {
+      display: inline-block;
+      width: 28px; height: 28px;
+    }
+
+    /* BALANCE */
+    .balance-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 12px var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    .balance-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 0.5rem;
+    }
+
+    .balance-amount {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      line-height: 1;
+    }
+
+    .balance-amount .coin-icon { width: 36px; height: 36px; }
+
+    .balance-empty {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    /* FORMS */
+    .form-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input[type="number"], input[type="text"] {
+      flex: 1;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: var(--gold); }
+
+    input[type="text"].inline-edit {
+      background: transparent;
+      border: 1.5px dashed transparent;
+      padding: 0.2rem 0.4rem;
+      border-radius: 6px;
+      width: 100%;
+      font-size: inherit;
+      font-weight: inherit;
+    }
+
+    input[type="text"].inline-edit:hover { border-color: var(--border); background: var(--bg); }
+    input[type="text"].inline-edit:focus { border-color: var(--gold); background: var(--bg); border-style: solid; outline: none; }
+
+    input[type="number"].inline-edit {
+      background: transparent;
+      border: 1.5px dashed transparent;
+      padding: 0.2rem 0.4rem;
+      border-radius: 6px;
+      width: 80px;
+      font-size: inherit;
+    }
+
+    input[type="number"].inline-edit:hover { border-color: var(--border); background: var(--bg); }
+    input[type="number"].inline-edit:focus { border-color: var(--gold); background: var(--bg); border-style: solid; outline: none; }
+
+    .btn {
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn:active { transform: scale(0.96); }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--white);
+    }
+    .btn-gold:hover { background: #b88912; }
+
+    .btn-blue {
+      background: var(--blue);
+      color: var(--white);
+    }
+    .btn-blue:hover { background: #3a7fc4; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: #888;
+    }
+    .btn-outline:hover { border-color: var(--text); color: var(--text); }
+
+    .btn-danger {
+      background: var(--danger);
+      color: var(--white);
+    }
+    .btn-danger:hover { background: #b83a3a; }
+
+    .btn-sm { padding: 0.4rem 0.7rem; font-size: 0.8rem; border-radius: 7px; }
+    .btn-xs { padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 6px; }
+
+    /* FLASH */
+    .flash {
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      animation: flashAnim 2s ease forwards;
+    }
+
+    @keyframes flashAnim {
+      0% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .flash-gold { background: var(--gold-light); color: #7a5f00; border: 1px solid var(--gold); }
+    .flash-blue { background: var(--blue-light); color: #2a5f9a; border: 1px solid var(--blue); }
+    .flash-danger { background: var(--danger-light); color: #8a2a2a; border: 1px solid var(--danger); }
+
+    /* LOGS */
+    .logs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .logs-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .log-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .log-entry {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 1px 4px var(--shadow);
+    }
+
+    .log-entry.collection { border-left: 4px solid var(--gold); }
+    .log-entry.purchase { border-left: 4px solid var(--blue); }
+
+    .log-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .collection .log-dot { background: var(--gold); }
+    .purchase .log-dot { background: var(--blue); }
+
+    .log-info { flex: 1; min-width: 0; }
+    .log-desc { font-weight: 600; font-size: 0.95rem; }
+    .log-meta { font-size: 0.78rem; color: #aaa; margin-top: 0.15rem; }
+
+    .log-amount {
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .collection .log-amount { color: var(--gold); }
+    .purchase .log-amount { color: var(--blue); }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #bbb;
+    }
+
+    .empty-state svg { margin-bottom: 0.5rem; opacity: 0.4; }
+    .empty-state p { font-size: 0.95rem; }
+
+    /* STORE TOGGLE */
+    .store-toggle {
+      display: flex;
+      background: var(--white);
+      border-radius: 12px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+      gap: 4px;
+    }
+
+    .store-toggle-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #aaa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .store-toggle-btn.active {
+      background: var(--gold);
+      color: var(--white);
+    }
+
+    /* STORE ITEMS */
+    .item-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 6px var(--shadow);
+      margin-bottom: 0.6rem;
+    }
+
+    .item-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .item-name {
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .item-price {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .item-actions { display: flex; gap: 0.4rem; align-items: center; }
+
+    .shop-item-price {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .shop-item-actions { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; }
+
+    .item-card.cant-afford { opacity: 0.5; }
+    .item-card.just-bought { animation: boughtAnim 0.4s ease; }
+
+    @keyframes boughtAnim {
+      0% { background: var(--gold-light); }
+      100% { background: var(--white); }
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 0.6rem;
+      margin-top: 1.5rem;
+    }
+
+    .setup-form { margin-bottom: 1.25rem; }
+    .setup-form .form-row { gap: 0.4rem; }
+    .setup-form input[type="text"] { flex: 2; }
+    .setup-form input[type="number"] { flex: 1; }
+
+    .add-item-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .danger-zone { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+
+    /* LOGIN OVERLAY */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    #login-overlay h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #login-overlay p {
+      color: #888;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      max-width: 320px;
+    }
+
+    .btn-google {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 2px 8px var(--shadow);
+      transition: box-shadow 0.2s, transform 0.1s;
+    }
+
+    .btn-google:hover { box-shadow: 0 4px 16px var(--shadow); }
+    .btn-google:active { transform: scale(0.97); }
+
+    /* USER MENU */
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      padding: 0.4rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .user-menu:hover { background: var(--bg); }
+
+    .user-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .logout-link {
+      font-size: 0.75rem;
+      color: #aaa;
+      text-decoration: none;
+      padding: 0 0.5rem;
+    }
+
+    .logout-link:hover { color: var(--danger); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" data-tab="wallet">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><circle cx="18" cy="12" r="2"/></svg>
+      Wallet
+    </button>
+    <button class="nav-btn" data-tab="logs">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Logs
+    </button>
+    <button class="nav-btn" data-tab="store">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Store
+    </button>
+  </div>
+</nav>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay">
+  <h1>
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d4a017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h6M9 15h6"/></svg>
+    Encomy
+  </h1>
+  <p>Track your coins, manage your store — sign in to get started.</p>
+  <a href="/auth/google" class="btn-google">
+    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Sign in with Google
+  </a>
+</div>
+
+<main>
+  <!-- WALLET -->
+  <div id="page-wallet" class="page active">
+    <div class="balance-card">
+      <div class="balance-label">Your Balance</div>
+      <div id="balance-display"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="add-item-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a017" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Collect Coins
+      </div>
+      <form id="collect-form" class="form-row">
+        <input type="number" id="collect-amount" placeholder="Amount collected" min="1" required>
+        <button type="submit" class="btn btn-gold">Add Coins</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- LOGS -->
+  <div id="page-logs" class="page">
+    <div class="logs-header">
+      <h2>Transaction History</h2>
+      <button class="btn btn-outline btn-sm" id="clear-logs-btn">Clear All</button>
+    </div>
+    <div id="flash-container-logs"></div>
+    <div id="log-list"></div>
+  </div>
+
+  <!-- STORE -->
+  <div id="page-store" class="page">
+    <div class="store-toggle">
+      <button class="store-toggle-btn" id="toggle-setup">Setup</button>
+      <button class="store-toggle-btn active" id="toggle-shop">Shop</button>
+    </div>
+
+    <div id="store-setup" style="display:none;">
+      <div class="form-card setup-form">
+        <div class="add-item-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Add New Item
+        </div>
+        <form id="add-item-form" class="form-row">
+          <input type="text" id="item-name" placeholder="Item name" required>
+          <input type="number" id="item-price" placeholder="Price" min="1" required>
+          <button type="submit" class="btn btn-blue">Add</button>
+        </form>
+      </div>
+      <div class="section-title">Store Items</div>
+      <div id="setup-item-list"></div>
+    </div>
+
+    <div id="store-shop">
+      <div id="flash-container-store"></div>
+      <div id="shop-item-list"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // ---- STATE ----
+  let appData = { balance: 0, logs: [], items: [] };
+  let currentUser = null;
+
+  // ---- COIN SVG ----
+  const COIN_SVG = `<svg class="coin-icon" viewBox="0 0 24 24" fill="none" stroke="#d4a017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h6M9 15h6"/></svg>`;
+
+  // ---- INIT ----
+  async function init() {
+    try {
+      const meRes = await fetch('/api/me');
+      const me = await meRes.json();
+      if (!me.loggedIn) {
+        document.getElementById('login-overlay').style.display = 'flex';
+        return;
+      }
+      currentUser = me.user;
+      document.getElementById('login-overlay').style.display = 'none';
+      renderUserMenu();
+      await loadData();
+    } catch (err) {
+      console.error('Init failed:', err);
+    }
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch('/api/data');
+      if (!res.ok) return;
+      appData = await res.json();
+      renderBalance();
+      renderLogs();
+      renderShopItems();
+    } catch (err) { console.error('Load failed:', err); }
+  }
+
+  function renderUserMenu() {
+    if (!currentUser) return;
+    const userArea = document.createElement('div');
+    userArea.className = 'user-menu';
+    userArea.innerHTML = `
+      <img src="${currentUser.picture || 'https://via.placeholder.com/32'}" class="user-avatar" alt="${currentUser.name}">
+      <span class="user-name">${currentUser.name}</span>
+      <a href="/auth/logout" class="logout-link">Logout</a>
+    `;
+    document.querySelector('.nav-inner').appendChild(userArea);
+  }
+
+  // ---- TABS ----
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---- BALANCE DISPLAY ----
+  function renderBalance() {
+    const el = document.getElementById('balance-display');
+    if (appData.balance === 0) {
+      el.innerHTML = `<div class="balance-empty">${COIN_SVG} 0 coins</div>`;
+    } else {
+      el.innerHTML = `<div class="balance-amount">${COIN_SVG} ${appData.balance.toLocaleString()}</div>`;
+    }
+  }
+
+  // ---- FLASH ----
+  function showFlash(containerId, message, type) {
+    const container = document.getElementById(containerId);
+    const flash = document.createElement('div');
+    flash.className = `flash flash-${type}`;
+    flash.textContent = message;
+    container.innerHTML = '';
+    container.appendChild(flash);
+    setTimeout(() => { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 2500);
+  }
+
+  function formatDate(ts) {
+    const d = new Date(ts);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+      ' at ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // ---- COLLECT COINS ----
+  document.getElementById('collect-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const amt = parseInt(document.getElementById('collect-amount').value);
+    if (!amt || amt <= 0) return;
+
+    try {
+      const res = await fetch('/api/collect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amt })
+      });
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+
+      appData.balance = data.balance;
+      appData.logs.unshift({ type: 'collection', amount: amt, timestamp: new Date().toISOString(), name: null });
+      renderBalance();
+      renderLogs();
+      showFlash('flash-container-logs', `+${amt.toLocaleString()} coins collected!`, 'gold');
+      document.getElementById('collect-amount').value = '';
+    } catch (err) { console.error(err); }
+  });
+
+  // ---- LOGS ----
+  function renderLogs() {
+    const container = document.getElementById('log-list');
+    if (appData.logs.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <p>No transactions yet</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = appData.logs.map(log => `
+      <div class="log-entry ${log.type}">
+        <div class="log-dot"></div>
+        <div class="log-info">
+          <div class="log-desc">${log.type === 'collection' ? 'Coin Collection' : log.name}</div>
+          <div class="log-meta">${formatDate(new Date(log.timestamp))}</div>
+        </div>
+        <div class="log-amount">${log.type === 'collection' ? '+' : '-'}${log.amount.toLocaleString()}</div>
+      </div>`).join('');
+  }
+
+  document.getElementById('clear-logs-btn').addEventListener('click', async () => {
+    if (!confirm('Clear all transaction history? This cannot be undone.')) return;
+    try {
+      await fetch('/api/logs', { method: 'DELETE' });
+      appData.logs = [];
+      renderLogs();
+    } catch (err) { console.error(err); }
+  });
+
+  // ---- STORE TOGGLE ----
+  document.getElementById('toggle-setup').addEventListener('click', () => {
+    document.getElementById('store-setup').style.display = 'block';
+    document.getElementById('store-shop').style.display = 'none';
+    document.getElementById('toggle-setup').classList.add('active');
+    document.getElementById('toggle-shop').classList.remove('active');
+    renderSetupItems();
+  });
+
+  document.getElementById('toggle-shop').addEventListener('click', () => {
+    document.getElementById('store-setup').style.display = 'none';
+    document.getElementById('store-shop').style.display = 'block';
+    document.getElementById('toggle-shop').classList.add('active');
+    document.getElementById('toggle-setup').classList.remove('active');
+    renderShopItems();
+  });
+
+  // ---- SETUP ----
+  function renderSetupItems() {
+    const container = document.getElementById('setup-item-list');
+    if (appData.items.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <p>No store items yet — add some above</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = appData.items.map(item => `
+      <div class="item-card" data-id="${item.id}">
+        <div class="item-card-header">
+          <div class="item-name">
+            ${COIN_SVG}
+            <input type="text" class="inline-edit item-name-edit" value="${item.name}">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <div class="item-price">
+              <input type="number" class="inline-edit item-price-edit" value="${item.price}" min="1">
+              coins
+            </div>
+            <div class="item-actions">
+              <button class="btn btn-danger btn-xs delete-item" data-id="${item.id}">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+
+    container.querySelectorAll('.item-name-edit').forEach(inp => {
+      inp.addEventListener('change', async e => {
+        const card = e.target.closest('.item-card');
+        const id = card.dataset.id;
+        await fetch(`/api/items/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: e.target.value.trim() })
+        });
+        const item = appData.items.find(i => i.id === id);
+        if (item) item.name = e.target.value.trim();
+      });
+    });
+
+    container.querySelectorAll('.item-price-edit').forEach(inp => {
+      inp.addEventListener('change', async e => {
+        const card = e.target.closest('.item-card');
+        const id = card.dataset.id;
+        const price = parseInt(e.target.value);
+        if (!price || price <= 0) return;
+        await fetch(`/api/items/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price })
+        });
+        const item = appData.items.find(i => i.id === id);
+        if (item) item.price = price;
+        renderBalance();
+      });
+    });
+
+    container.querySelectorAll('.delete-item').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        const id = e.currentTarget.dataset.id;
+        await fetch(`/api/items/${id}`, { method: 'DELETE' });
+        appData.items = appData.items.filter(i => i.id !== id);
+        renderSetupItems();
+      });
+    });
+  }
+
+  document.getElementById('add-item-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const nameEl = document.getElementById('item-name');
+    const priceEl = document.getElementById('item-price');
+    const name = nameEl.value.trim();
+    const price = parseInt(priceEl.value);
+    if (!name || !price || price <= 0) return;
+
+    try {
+      const res = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, price })
+      });
+      const item = await res.json();
+      appData.items.push(item);
+      nameEl.value = '';
+      priceEl.value = '';
+      renderSetupItems();
+    } catch (err) { console.error(err); }
+  });
+
+  // ---- SHOP ----
+  function renderShopItems() {
+    const container = document.getElementById('shop-item-list');
+    if (appData.items.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <p>Store is empty — go to Setup to add items</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = appData.items.map(item => {
+      const canAfford = appData.balance >= item.price;
+      return `
+        <div class="item-card ${canAfford ? '' : 'cant-afford'}" data-id="${item.id}">
+          <div class="item-card-header">
+            <div class="item-name">${item.name}</div>
+            <div class="shop-item-actions">
+              <div class="shop-item-price">${COIN_SVG} ${item.price.toLocaleString()}</div>
+              <button class="btn btn-gold btn-sm buy-btn" data-id="${item.id}" ${canAfford ? '' : 'disabled'}>Buy</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    container.querySelectorAll('.buy-btn').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        const id = e.currentTarget.dataset.id;
+        const item = appData.items.find(i => i.id === id);
+        if (!item || appData.balance < item.price) return;
+        if (!confirm(`Buy "${item.name}" for ${item.price.toLocaleString()} coins?`)) return;
+
+        try {
+          const res = await fetch('/api/buy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ itemId: id })
+          });
+          const data = await res.json();
+          if (data.error) { alert(data.error); return; }
+
+          appData.balance = data.balance;
+          appData.logs.unshift({ type: 'purchase', amount: item.price, timestamp: new Date().toISOString(), name: item.name });
+          renderBalance();
+          renderShopItems();
+          showFlash('flash-container-store', `Purchased "${item.name}"!`, 'blue');
+        } catch (err) { console.error(err); }
+      });
+    });
+  }
+
+  // ---- START ----
+  init();
+</script>
+</body>
+</html>

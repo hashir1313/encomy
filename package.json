@@ -1,0 +1,23 @@
+{
+  "name": "encomy",
+  "version": "1.0.0",
+  "description": "Coin tracker & store with Google OAuth",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "db:push": "prisma db push",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "express": "^4.21.0",
+    "express-session": "^1.18.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0",
+    "prisma": "^6.0.0"
+  }
+}
