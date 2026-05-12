@@ -6,7 +6,13 @@ const { PrismaClient } = require('@prisma/client');
 const path = require('path');
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL || `file:${path.join(process.cwd(), 'prisma', 'dev.db')}`
+    }
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 // ---- AUTH CONFIG ----
@@ -258,6 +264,12 @@ app.delete('/api/logs', requireAuth, async (req, res) => {
 // ---- STATIC FILES ----
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ---- ERROR HANDLER ----
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Internal Server Error');
 });
 
 // ---- START ----
